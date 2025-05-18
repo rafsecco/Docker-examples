@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Current File-Dev",
+      "request": "launch",
+      "mainClass": "${file}",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": []
+    },
+    {
+      "type": "java",
+      "name": "UIMain",
+      "request": "launch",
+      "mainClass": "diobootcamp.UIMain",
+      "projectName": "dio-bootcamp-Jogo-Sudoku_48b7bd61",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+      },
+      "args": []
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "diobootcamp.Main",
+      "projectName": "dio-bootcamp-Jogo-Sudoku_48b7bd61",
+      "args": []
+    }
+  ]
+}
