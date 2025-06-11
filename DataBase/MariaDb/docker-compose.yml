@@ -1,0 +1,12 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb_container
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d   # Mapeia a pasta local 'sql' para a pasta de inicialização do MariaDB
+    ports:
+      - "${PORTA}:3306"
+    restart: always
