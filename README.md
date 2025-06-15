@@ -6,6 +6,7 @@ repository for reference and examples
 
 Comandos:
 ```
+docker compose -p [nome] build --force-rm
 docker compose --env-file .env.dev up -d --build
 docker compose down
 ```
