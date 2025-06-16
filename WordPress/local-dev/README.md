@@ -1,18 +1,30 @@
 ## WordPress Local for development
 
-Para testar este exemplo precisa ser alterado o arquivo hosts, no caso como instalamos o docker desktop apenas verifique se tem registrado o `host.docker.internal`
-
-- Windows: C:\Windows\System32\Drivers\etc\hosts
-- Linux: /etc/hosts
-- MacOS: /etc/hosts
-
-Acrescente a linha abaixo no arquivo hosts
-```
-
-```
-
-
 ## Criando o certificado SSL local
+
+#### Usando mkcert
+
+[Github - mkcert](https://github.com/FiloSottile/mkcert)
+
+- Instale o chocolatey (windows), execute no powershell como admin
+  ```
+  Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  ```
+- Instale o mkcert
+  ```
+  mkcert -install
+  ```
+
+- Verifique que se o hostname `host.docker.internal` está configurad no arquivo hosts
+  - Windows: C:\Windows\System32\Drivers\etc\hosts
+  - Linux: /etc/hosts
+  - MacOS: /etc/hosts
+
+
+- Vá para a pasta `certs` do projeto, se não existir crie e execute o comando:
+  ```
+  mkcert host.docker.internal
+  ```
 
 #### Usando OpenSSL
 
@@ -80,28 +92,12 @@ https.createServer(options, (req, res) => {
 ```
 Isso criará um servidor HTTPS local em `https://localhost:3000`.
 
+#### Links interessantes
 
-#### Usando mkcert
+[Github - mkcert](https://github.com/FiloSottile/mkcert)
 
-[github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert)
+[Youtube - Docker Setup for Local WordPress Development](https://youtu.be/GG2k-La5t3o?si=Lwa2sp84wrFmf7L-)
 
-- Instale o chocolatey (windows), execute no powershell como admin
-  ```
-  Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-  ```
-- Instale o mkcert
-  ```
-  mkcert -install
-  ```
-- Vá para a pasta `certs` do projeto, se não existir crie e execute o comando:
-  ```
-  mkcert host.docker.internal
-  ```
+[Youtybe -  Adding SSL Support to Your WordPress Docker Setup!](https://youtu.be/HH4s3x1PiA4?si=myZLfxINGdF6RZCD)
 
-
-#### Links interessantes para WordPress
-
-https://youtu.be/GG2k-La5t3o?si=Lwa2sp84wrFmf7L-  Docker Setup for Local WordPress Development
-https://youtu.be/HH4s3x1PiA4?si=myZLfxINGdF6RZCD  Adding SSL Support to Your WordPress Docker Setup!
-
-https://youtu.be/XW4WPP8ybqI?si=8_ZyMvpiJPiBweVr Make anything a shortcode for WordPress
+[Youtube - Make anything a shortcode for WordPress](https://youtu.be/XW4WPP8ybqI?si=8_ZyMvpiJPiBweVr)
