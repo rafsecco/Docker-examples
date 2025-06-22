@@ -1,6 +1,8 @@
 *.env
 
 /WordPress/local/wp-content/
-
 /WordPress/local-dev/nginx/certs/*.pem
 /WordPress/local-dev/src/
+
+
+/WordPress/bedrock/wp-bedrock/
