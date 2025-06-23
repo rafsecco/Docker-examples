@@ -1,0 +1,4 @@
+.env
+
+# Ignore WordPress core files
+bedrock/wp-bedrock
