@@ -6,7 +6,11 @@ services:
     ports:
       - "${PORTA}:3306"
     volumes:
-      - ./sql/${ENVIROMENT}:/docker-entrypoint-initdb.d
+      - ../Scripts/${ENVIROMENT}:/docker-entrypoint-initdb.d
+      - db-mariadb-data:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MARIADB_DATABASE}
+
+volumes:
+  db-mariadb-data:
