@@ -1,12 +1,12 @@
 services:
-  mariadb:
+  db-mariadb:
     image: mariadb:10.11
     container_name: mariadb_container
+    restart: always
+    ports:
+      - "${PORTA}:3306"
+    volumes:
+      - ./sql/${ENVIROMENT}:/docker-entrypoint-initdb.d
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${MARIADB_DATABASE}
-    volumes:
-      - ./sql/${ENVIROMENT}:/docker-entrypoint-initdb.d
-    ports:
-      - "${PORTA}:3306"
-    restart: always
