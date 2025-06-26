@@ -1,0 +1,106 @@
+services:
+  db-mariadb:
+    image: mariadb:lts
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - 3306:3306
+    volumes:
+      - db-mariadb-data:/var/lib/mysql
+    command: "--default-authentication-plugin=mysql_native_password"
+    networks:
+      - wordpress-network
+    environment:
+      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_USER=${DB_USER}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - 8081:80
+    networks:
+      - wordpress-network
+    environment:
+      PMA_HOST: db-mariadb:3306
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    depends_on:
+      db-mariadb:
+        condition: service_healthy
+
+  wordpress:
+    image: wordpress:php8.0-fpm-alpine
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - wordpress:/var/www/html
+      - ./src/wp-content:/var/www/html/wp-content
+    networks:
+      - wordpress-network
+    environment:
+      - WORDPRESS_DB_HOST=db-mariadb:3306
+      - WORDPRESS_DB_NAME=${DB_NAME}
+      - WORDPRESS_DB_USER=${DB_USER}
+      - WORDPRESS_DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      db-mariadb:
+        condition: service_healthy
+
+  webservice:
+    image: nginx:stable-alpine-perl
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - wordpress:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      #- certbot-etc:/etc/letsencrypt
+    entrypoint: /bin/sh -c 'envsubst "$$DOMAIN $$WWW_DOMAIN" < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g "daemon off;"'
+    networks:
+      - wordpress-network
+    depends_on:
+      - wordpress
+    # healthcheck:
+    #   test: curl --fail http://localhost/ || exit 1
+    #   interval: 40s
+    #   timeout: 30s
+    #   retries: 3
+    #   start_period: 60s
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - wordpress:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email raf.secco@gmail.com --agree-tos --no-eff-email --staging -d your_domain -d www.your_domain
+  # You’ve also included a command option that specifies a subcommand to run with the container’s default certbot command. The certonly subcommand will obtain a certificate with the following options:
+  #   --webroot: This tells Certbot to use the webroot plugin to place files in the webroot folder for authentication. This plugin depends on the HTTP-01 validation method, which uses an HTTP request to prove that Certbot can access resources from a server that responds to a given domain name.
+  #   --webroot-path: This specifies the path of the webroot directory.
+  #   --email: Your preferred email for registration and recovery.
+  #   --agree-tos: This specifies that you agree to ACME’s Subscriber Agreement.
+  #   --no-eff-email: This tells Certbot that you do not wish to share your email with the Electronic Frontier Foundation (EFF). Feel free to omit this if you would prefer.
+  #   --staging: This tells Certbot that you would like to use Let’s Encrypt’s staging environment to obtain test certificates. Using this option allows you to test your configuration options and avoid possible domain request limits. For more information about these limits, please read Let’s Encrypt’s rate limits documentation.
+  #   -d: This allows you to specify domain names you would like to apply to your request. In this case, you’ve included your_domain and www.your_domain. Be sure to replace these with your own domain.
+
+volumes:
+  db-mariadb-data:
+  wordpress:
+  certbot-etc:
+
+networks:
+  wordpress-network:
+    driver: bridge

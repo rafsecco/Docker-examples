@@ -1,0 +1,10 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./configs/sites-available:/etc/nginx/sites-available
+      - ./configs/sites-enabled:/etc/nginx/sites-enabled
+    ports:
+      - "80:80"
+      - "443:443"
