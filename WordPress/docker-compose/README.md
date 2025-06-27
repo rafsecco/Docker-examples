@@ -11,18 +11,9 @@ A registered domain name. This tutorial will use your_domain throughout or chang
 
 Comandos:
 ```
-docker compose up -d --build
-docker compose down
+docker compose -p wp-dockercompose up -d --build
+docker compose -p wp-dockercompose down
 ```
-
-Para alterar o arquivo .env a ser carregado
-```
-docker compose --env-file .env-dev up -d --build
-docker compose down
-```
-
-
-
 
 You can now check that your certificates have been mounted to the webserver container with docker-compose exec:
 ```

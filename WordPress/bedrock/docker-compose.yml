@@ -15,12 +15,12 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - wp_bedrock_network
-    # healthcheck:
-    #   test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-    #   start_period: 10s
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   php:
     container_name: ${PROJECT_NAME}-php
@@ -36,11 +36,11 @@ services:
       - wp_bedrock_network
     depends_on:
       - database
-    # healthcheck:
-    #   test: ["CMD", "php-fpm", "--test"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
+    healthcheck:
+      test: ["CMD", "php-fpm", "--test"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   nginx:
     container_name: ${PROJECT_NAME}-nginx
@@ -55,11 +55,11 @@ services:
       - wp_bedrock_network
     depends_on:
       - php
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   db_data:

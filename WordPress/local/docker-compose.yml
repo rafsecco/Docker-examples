@@ -14,7 +14,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      - wordpress-network
+      - wordpress-local-network
 
   phpmyadmin:
     depends_on:
@@ -28,7 +28,7 @@ services:
       PMA_HOST: database
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     networks:
-      - wordpress-network
+      - wordpress-local-network
 
   wordpress:
     depends_on:
@@ -47,11 +47,11 @@ services:
     volumes:
       - ./wp-content:/var/www/html/wp-content
     networks:
-      - wordpress-network
+      - wordpress-local-network
 
 volumes:
   db-data:
 
 networks:
-  wordpress-network:
+  wordpress-local-network:
     driver: bridge

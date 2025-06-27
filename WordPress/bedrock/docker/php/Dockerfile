@@ -1,15 +1,13 @@
 FROM php:8.3-fpm AS builder
 
-ARG PROJECT_NAME=wp-test
-
 RUN echo "PROJECT_NAME is ${PROJECT_NAME}"
 
 RUN apt-get update && apt-get install -y \
-    git unzip zip curl \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql mysqli zip
+  git unzip zip curl \
+  libpng-dev libjpeg-dev libfreetype6-dev \
+  libonig-dev libxml2-dev libzip-dev \
+  && docker-php-ext-configure gd --with-freetype --with-jpeg \
+  && docker-php-ext-install gd pdo pdo_mysql mysqli zip
 
 COPY docker/php/composer-installer.sh /tmp/
 RUN chmod +x /tmp/composer-installer.sh && /tmp/composer-installer.sh
