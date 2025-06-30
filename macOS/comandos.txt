@@ -1,0 +1,144 @@
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    -e SHORTNAME=ventura \
+    sickcodes/docker-osx:latest
+
+To use WSLg's built-in X-11 server, change these two lines in the docker run command to point Docker-OSX to WSLg.
+  -e "DISPLAY=${DISPLAY:-:0.0}" \
+  -v /mnt/wslg/.X11-unix:/tmp/.X11-unix \
+
+
+O erro que você está enfrentando (`ALSA lib pcm.c:2722:(snd_pcm_open_noupdate) Unknown PCM default`) sugere que o **ALSA** não consegue encontrar o dispositivo de áudio padrão ou não está sendo configurado corretamente dentro do seu container.
+
+A combinação de erros envolvendo **ALSA** e **GTK** (`gtk initialization failed`) indica que o Docker não tem acesso adequado ao sistema de som nem ao servidor gráfico X11 (que é usado para interfaces gráficas).
+
+Vamos tentar corrigir esses problemas, abordando os dois pontos principais:
+
+### 1. **ALSA - Erro de Áudio**
+
+O erro relacionado ao ALSA (`Unknown PCM default` e `Failed to open 'default'`) ocorre porque o Docker não está conseguindo acessar o dispositivo de áudio do sistema. Isso pode ser causado pela falta de permissões ou pela configuração incorreta do dispositivo de áudio dentro do container.
+
+Aqui estão algumas formas de resolver isso:
+
+#### a. Garantir que o dispositivo de áudio é acessível
+
+Certifique-se de que o dispositivo de áudio `/dev/snd` está disponível e sendo montado corretamente no container. Isso pode ser feito com o parâmetro `--device` no comando `docker run`, como já foi sugerido antes. Para garantir o acesso ao dispositivo de áudio:
+
+```bash
+docker run -it \
+  --device /dev/kvm \
+  --device /dev/snd \
+  -p 50922:10022 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e "DISPLAY=${DISPLAY:-:0.0}" \
+  -e GENERATE_UNIQUE=true \
+  -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+  -e SHORTNAME=ventura \
+  sickcodes/docker-osx:latest
+```
+
+* **`--device /dev/snd`**: Garante que o container tenha acesso ao dispositivo de som.
+
+#### b. Verificar o ALSA no sistema host
+
+Se o dispositivo de áudio não estiver sendo detectado corretamente, pode ser necessário instalar os pacotes de áudio ou verificar se o ALSA está funcionando corretamente no seu sistema.
+
+Tente rodar o comando abaixo no seu host (máquina física ou virtual) para verificar se o ALSA está configurado corretamente:
+
+```bash
+aplay -l
+```
+
+Se não houver dispositivos listados, pode ser necessário reinstalar ou configurar o ALSA:
+
+```bash
+sudo apt-get install alsa-utils
+```
+
+Depois, verifique novamente com `aplay -l`.
+
+### 2. **GTK - Problema na Inicialização Gráfica**
+
+O erro `gtk initialization failed` sugere que o container não está conseguindo acessar a tela gráfica do seu sistema. Isso ocorre quando o Docker não tem acesso ao servidor X11, que é necessário para aplicações gráficas.
+
+Para corrigir isso, você pode garantir que a variável `DISPLAY` está configurada corretamente, e que o Docker tem acesso ao socket X11. No comando que você usou, você já passou o `DISPLAY`, mas vamos garantir que ele esteja sendo feito corretamente:
+
+#### a. Montar o diretório `/tmp/.X11-unix`
+
+Esse diretório é onde o X11 cria os sockets para comunicação com os clientes gráficos. Certifique-se de que ele está sendo montado corretamente:
+
+```bash
+docker run -it \
+  --device /dev/kvm \
+  --device /dev/snd \
+  -p 50922:10022 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e "DISPLAY=${DISPLAY:-:0.0}" \
+  -e GENERATE_UNIQUE=true \
+  -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+  -e SHORTNAME=ventura \
+  sickcodes/docker-osx:latest
+```
+
+#### b. Permitir o acesso ao X11 para o Docker
+
+Você também pode precisar permitir explicitamente que o Docker acesse o servidor X11. Para isso, rode o seguinte comando no host (antes de executar o `docker run`):
+
+```bash
+xhost +local:docker
+```
+
+Isso permite que qualquer container Docker acesse o servidor X11.
+
+### 3. **Usar `--privileged` (Caso o problema seja de permissões)**
+
+Se os problemas de permissões continuarem, você pode tentar rodar o Docker com a flag `--privileged`, que concede permissões extras ao container. Isso pode ser necessário em alguns sistemas para garantir que o Docker tenha acesso adequado ao hardware (como o áudio e a interface gráfica).
+
+```bash
+docker run --privileged -it \
+  --device /dev/kvm \
+  --device /dev/snd \
+  -p 50922:10022 \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e "DISPLAY=${DISPLAY:-:0.0}" \
+  -e GENERATE_UNIQUE=true \
+  -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+  -e SHORTNAME=ventura \
+  sickcodes/docker-osx:latest
+```
+
+**Atenção**: Usar a flag `--privileged` concede permissões amplas ao container e pode ter implicações de segurança, portanto, use com cautela, especialmente em ambientes de produção.
+
+### Resumo das etapas:
+
+* **Acesso ao dispositivo de áudio**: Use `--device /dev/snd` para garantir que o áudio esteja acessível no container.
+* **Servidor gráfico (X11)**: Certifique-se de que o diretório `/tmp/.X11-unix` esteja montado e passe a variável `DISPLAY` corretamente. Use `xhost +local:docker` para permitir o acesso ao servidor gráfico.
+* **Permissões avançadas**: Se necessário, use a opção `--privileged` para conceder permissões adicionais ao container.
+
+Essas são as soluções principais para corrigir esses problemas. Se o erro persistir, me avise, e podemos tentar outros passos para diagnosticar!
+
+
+
+
+
+
+
+
+docker run -it
+  --device /dev/kvm
+  --device /dev/snd
+  -p 50922:10022
+  -v /tmp/.X11-unix:/tmp/.X11-unix
+  -e "DISPLAY=${DISPLAY:-:0.0}"
+  -e GENERATE_UNIQUE=true
+  -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist'
+  -e SHORTNAME=ventura
+  sickcodes/docker-osx:latest
+
+
+
