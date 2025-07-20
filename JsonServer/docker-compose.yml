@@ -1,0 +1,8 @@
+services:
+  json-server:
+    image: clue/json-server
+    restart: always
+    ports:
+      - "3000:80"
+    volumes:
+      - ./data/db.json:/data/db.json
