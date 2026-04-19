@@ -1,8 +1,8 @@
-*.env
+.env*
+!.env.example
+!**/.env.example
 
 /WordPress/local/wp-content/
 /WordPress/local-dev/nginx/certs/*.pem
 /WordPress/local-dev/src/
-
-
 /WordPress/bedrock/wp-bedrock/

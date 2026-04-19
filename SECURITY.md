@@ -1,0 +1,1 @@
+Explica como reportar vulnerabilidades
