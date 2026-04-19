@@ -70,7 +70,7 @@ cp .env.example .env
 * Usar Node versão 18+
 * Rodar lint antes de commit
 
-#### Você pode chamar de várias formas:
+### Você pode chamar de várias formas:
 
 COMMANDS.md
 CHEATSHEET.md
