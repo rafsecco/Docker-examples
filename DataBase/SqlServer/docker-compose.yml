@@ -20,5 +20,18 @@ services:
       timeout: 3s
       retries: 10
 
+  mssqltools:
+    image: mcr.microsoft.com/mssql-tools
+    restart: no
+    depends_on:
+      - db-sqlserver
+    environment:
+      DB_HOST: "db-sqlserver"
+      DB_PASSWORD: "SA_password123"
+    volumes:
+      - ../Scripts:/tmp/
+      - db-sqlserver-data:/var/opt/mssql
+    command: /bin/bash ./tmp/init-database.sh
+
 volumes:
   db-sqlserver-data:

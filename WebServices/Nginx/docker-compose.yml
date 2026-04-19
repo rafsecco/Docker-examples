@@ -1,0 +1,14 @@
+services:
+  web:
+    image: nginx:stable-alpine-slim
+    ports:
+      - "8081:80"
+    volumes:
+      - ./html:/wwwroot/site-padrao/
+      - ./servers:/etc/nginx/conf.d/
+    # environment:
+    #   - NGINX_HOST=foobar.com
+    #   - NGINX_PORT=80
+
+
+# https://conteudos.kipperdev.com.br/Guia-de-estudos-Nginx-2433cdde6693807da12cd3bf69f04163
