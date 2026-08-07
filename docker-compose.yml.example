@@ -2,6 +2,8 @@
 # Configuração de file descriptors para produção
 # Referência: https://docs.docker.com/compose/compose-file/
 
+name: nome-do-projeto
+
 services:
   app:
     image: minha-app:latest
