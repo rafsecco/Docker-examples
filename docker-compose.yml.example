@@ -1,0 +1,85 @@
+# docker-compose.yml
+# Configuração de file descriptors para produção
+# Referência: https://docs.docker.com/compose/compose-file/
+
+services:
+  app:
+    image: minha-app:latest
+    container_name: minha-app
+
+    # ─── Limites de file descriptors ───────────────────────────────────────────
+    ulimits:
+      nofile:
+        soft: 65536   # limite ativo (processo pode aumentar até o hard)
+        hard: 65536   # teto máximo permitido para este container
+
+    # ─── Parâmetros do kernel (sysctl) ─────────────────────────────────────────
+    # Requer que o host tenha net.ipv4.* como "unsafe" sysctls habilitados,
+    # ou que o container rode com --privileged (evite em produção).
+    sysctls:
+      fs.file-max: 2000000          # teto global de FDs do sistema
+      net.core.somaxconn: 65535     # tamanho máximo da fila de conexões TCP
+      net.ipv4.tcp_tw_reuse: 1      # reutilizar sockets em TIME_WAIT
+
+    # ─── Recursos de CPU e memória (boas práticas junto com FDs) ───────────────
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: production
+
+    restart: unless-stopped
+
+  # ─── Exemplo com Nginx como proxy reverso ──────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-proxy
+
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    sysctls:
+      net.core.somaxconn: 65535
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    depends_on:
+      - app
+
+    restart: unless-stopped
+
+  # ─── Exemplo com PostgreSQL ─────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-db
+
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+    environment:
+      POSTGRES_DB: minha_db
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: senha_segura
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+volumes:
+  pgdata:
